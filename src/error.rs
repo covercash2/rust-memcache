@@ -233,6 +233,8 @@ pub enum MemcacheError {
     CommandError(CommandError),
     #[cfg(feature = "tls")]
     OpensslError(openssl::ssl::HandshakeError<std::net::TcpStream>),
+    #[cfg(feature = "rustls")]
+    RustlsError(rustls::Error),
     /// Parse errors
     ParseError(ParseError),
     /// ConnectionPool errors
@@ -246,6 +248,8 @@ impl fmt::Display for MemcacheError {
             MemcacheError::IOError(ref err) => err.fmt(f),
             #[cfg(feature = "tls")]
             MemcacheError::OpensslError(ref err) => err.fmt(f),
+            #[cfg(feature = "rustls")]
+            MemcacheError::RustlsError(ref err) => err.fmt(f),
             MemcacheError::ParseError(ref err) => err.fmt(f),
             MemcacheError::ClientError(ref err) => err.fmt(f),
             MemcacheError::ServerError(ref err) => err.fmt(f),
@@ -262,6 +266,8 @@ impl error::Error for MemcacheError {
             MemcacheError::IOError(ref err) => err.source(),
             #[cfg(feature = "tls")]
             MemcacheError::OpensslError(ref err) => err.source(),
+            #[cfg(feature = "rustls")]
+            MemcacheError::RustlsError(ref err) => err.source(),
             MemcacheError::ParseError(ref p) => p.source(),
             MemcacheError::ClientError(_) => None,
             MemcacheError::ServerError(_) => None,
@@ -294,5 +300,12 @@ impl From<openssl::ssl::HandshakeError<std::net::TcpStream>> for MemcacheError {
 impl From<r2d2::Error> for MemcacheError {
     fn from(err: r2d2::Error) -> MemcacheError {
         MemcacheError::PoolError(err)
+    }
+}
+
+#[cfg(feature = "rustls")]
+impl From<rustls::Error> for MemcacheError {
+    fn from(err: rustls::Error) -> MemcacheError {
+        MemcacheError::RustlsError(err)
     }
 }

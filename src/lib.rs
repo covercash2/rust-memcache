@@ -69,6 +69,8 @@ extern crate byteorder;
 extern crate enum_dispatch;
 #[cfg(feature = "tls")]
 extern crate openssl;
+#[cfg(feature = "rustls")]
+extern crate rustls;
 extern crate r2d2;
 extern crate rand;
 extern crate url;
