@@ -10,10 +10,12 @@ keywords = ["memcache", "memcached", "driver", "cache", "database"]
 edition = "2024"
 
 [features]
-default = ["tls"]
+default = ["default-tls"]
+default-tls = ["tls"]
 tls = ["openssl"]
+native-tls = ["tls"]
 rustls = ["dep:rustls", "dep:webpki-roots", "dep:rustls-pemfile"]
-native-roots = ["rustls", "dep:rustls-native-certs"]
+rustls-native-roots = ["rustls", "dep:rustls-native-certs"]
 
 [dependencies]
 byteorder = "1"

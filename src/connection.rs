@@ -388,7 +388,7 @@ impl Connection {
                             root_cert_store.add(cert?).map_err(rustls::Error::from)?;
                         }
                     } else {
-                        #[cfg(feature = "native-roots")]
+                        #[cfg(feature = "rustls-native-roots")]
                         {
                             let loaded = rustls_native_certs::load_native_certs();
                             for cert in loaded.certs {
@@ -402,7 +402,7 @@ impl Connection {
                                 ));
                             }
                         }
-                        #[cfg(not(feature = "native-roots"))]
+                        #[cfg(not(feature = "rustls-native-roots"))]
                         root_cert_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
                     }
 
