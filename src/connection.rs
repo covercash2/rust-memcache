@@ -388,6 +388,21 @@ impl Connection {
                             root_cert_store.add(cert?).map_err(rustls::Error::from)?;
                         }
                     } else {
+                        #[cfg(feature = "native-roots")]
+                        {
+                            let loaded = rustls_native_certs::load_native_certs();
+                            for cert in loaded.certs {
+                                // Individual cert errors are common (expired/malformed certs in
+                                // the system store), so we skip them and continue loading.
+                                root_cert_store.add(cert).ok();
+                            }
+                            if root_cert_store.is_empty() {
+                                return Err(MemcacheError::BadURL(
+                                    "no usable native root certificates found".into(),
+                                ));
+                            }
+                        }
+                        #[cfg(not(feature = "native-roots"))]
                         root_cert_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
                     }
 
