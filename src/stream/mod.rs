@@ -9,16 +9,20 @@ use std::time::Duration;
 pub(crate) use self::udp_stream::UdpStream;
 use crate::error::MemcacheError;
 
-#[cfg(feature = "tls")]
+#[cfg(all(feature = "tls", not(feature = "rustls")))]
 use openssl::ssl::SslStream;
+#[cfg(feature = "rustls")]
+use rustls::{ClientConnection, StreamOwned};
 
 pub enum Stream {
     Tcp(TcpStream),
     Udp(UdpStream),
     #[cfg(unix)]
     Unix(UnixStream),
-    #[cfg(feature = "tls")]
+    #[cfg(all(feature = "tls", not(feature = "rustls")))]
     Tls(SslStream<TcpStream>),
+    #[cfg(feature = "rustls")]
+    Tls(StreamOwned<ClientConnection, TcpStream>),
 }
 
 impl Stream {
@@ -27,7 +31,7 @@ impl Stream {
             &mut Stream::Tcp(ref conn) => conn.set_read_timeout(timeout)?,
             #[cfg(unix)]
             &mut Stream::Unix(ref conn) => conn.set_read_timeout(timeout)?,
-            #[cfg(feature = "tls")]
+            #[cfg(any(feature = "tls", feature = "rustls"))]
             &mut Stream::Tls(ref stream) => stream.get_ref().set_read_timeout(timeout)?,
             &mut Stream::Udp(ref conn) => conn.set_read_timeout(timeout)?,
         }
@@ -39,7 +43,7 @@ impl Stream {
             &mut Stream::Tcp(ref conn) => conn.set_write_timeout(timeout)?,
             #[cfg(unix)]
             &mut Stream::Unix(ref conn) => conn.set_write_timeout(timeout)?,
-            #[cfg(feature = "tls")]
+            #[cfg(any(feature = "tls", feature = "rustls"))]
             &mut Stream::Tls(ref stream) => stream.get_ref().set_write_timeout(timeout)?,
             &mut Stream::Udp(ref conn) => conn.set_write_timeout(timeout)?,
         }
@@ -54,7 +58,7 @@ impl Read for Stream {
             Stream::Udp(stream) => stream.read(buf),
             #[cfg(unix)]
             Stream::Unix(stream) => stream.read(buf),
-            #[cfg(feature = "tls")]
+            #[cfg(any(feature = "tls", feature = "rustls"))]
             Stream::Tls(stream) => stream.read(buf),
         }
     }
@@ -67,7 +71,7 @@ impl Write for Stream {
             Stream::Udp(stream) => stream.write(buf),
             #[cfg(unix)]
             Stream::Unix(stream) => stream.write(buf),
-            #[cfg(feature = "tls")]
+            #[cfg(any(feature = "tls", feature = "rustls"))]
             Stream::Tls(stream) => stream.write(buf),
         }
     }
@@ -78,7 +82,7 @@ impl Write for Stream {
             Stream::Udp(stream) => stream.flush(),
             #[cfg(unix)]
             Stream::Unix(stream) => stream.flush(),
-            #[cfg(feature = "tls")]
+            #[cfg(any(feature = "tls", feature = "rustls"))]
             Stream::Tls(stream) => stream.flush(),
         }
     }

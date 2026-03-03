@@ -12,6 +12,7 @@ edition = "2024"
 [features]
 default = ["tls"]
 tls = ["openssl"]
+rustls = ["dep:rustls", "dep:webpki-roots", "dep:rustls-pemfile"]
 
 [dependencies]
 byteorder = "1"
@@ -20,3 +21,6 @@ rand = "0.10"
 enum_dispatch = "0.3"
 openssl = { version = "^0.10", optional = true }
 r2d2 = "^0.8"
+rustls = { version = "0.23", optional = true }
+webpki-roots = { version = "1.0", optional = true }
+rustls-pemfile = { version = "2.0", optional = true }
